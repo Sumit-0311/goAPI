@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -62,34 +61,6 @@ func CreateUserEndpoint(response http.ResponseWriter, request *http.Request){
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	result, _ := collection.InsertOne(ctx, user)
 	json.NewEncoder(response).Encode(result)
-	time.Sleep(1 * time.Second)
-}
-
-func GetUsersEndpoint(response http.ResponseWriter, request *http.Request){
-	lock.Lock()
-    defer lock.Unlock()
-	response.Header().Add("content-type", "application/json")
-	var users []User
-	collection := client.Database("insta").Collection("users")
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	cursor, err := collection.Find(ctx, bson.M{})
-	if err != nil {
-		response.WriteHeader(http.StatusInternalServerError)
-		response.Write([]byte(`{"message": "` + err.Error() + `"}`))
-		return
-	}
-	defer cursor.Close(ctx)
-	for cursor.Next(ctx){
-		var user User
-		cursor.Decode(&user)
-		users = append(users, user)
-	}
-	if err := cursor.Err(); err != nil {
-		response.WriteHeader(http.StatusInternalServerError)
-		response.Write([]byte(`{"message": "` + err.Error() + `"}`))
-		return
-	}
-	json.NewEncoder(response).Encode(users)
 	time.Sleep(1 * time.Second)
 }
 
@@ -163,34 +134,6 @@ func GetPostEndpoint(response http.ResponseWriter, request *http.Request){
 	time.Sleep(1 * time.Second)
 }
 
-func GetPostsEndpoint(response http.ResponseWriter, request *http.Request){
-	lock.Lock()
-    defer lock.Unlock()
-	response.Header().Add("content-type", "application/json")
-	var posts []Post
-	collection := client.Database("insta").Collection("posts")
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	cursor, err := collection.Find(ctx, bson.M{})
-	if err != nil {
-		response.WriteHeader(http.StatusInternalServerError)
-		response.Write([]byte(`{"message": "` + err.Error() + `"}`))
-		return
-	}
-	defer cursor.Close(ctx)
-	for cursor.Next(ctx){
-		var post Post
-		cursor.Decode(&post)
-		posts = append(posts, post)
-	}
-	if err := cursor.Err(); err != nil {
-		response.WriteHeader(http.StatusInternalServerError)
-		response.Write([]byte(`{"message": "` + err.Error() + `"}`))
-		return
-	}
-	json.NewEncoder(response).Encode(posts)
-	time.Sleep(1 * time.Second)
-}
-
 func GetUserPosts(response http.ResponseWriter, request *http.Request){
 	lock.Lock()
     defer lock.Unlock()
@@ -229,10 +172,8 @@ func main() {
 	client, _ = mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
 	router := mux.NewRouter()
 	router.HandleFunc("/user", CreateUserEndpoint).Methods("POST")
-	router.HandleFunc("/users", GetUsersEndpoint).Methods("GET")
 	router.HandleFunc("/user/{id}", GetUserEndpoint).Methods("GET")
 	router.HandleFunc("/post", CreatePostEndpoint).Methods("POST")
-	router.HandleFunc("/posts", GetPostsEndpoint).Methods("GET")
 	router.HandleFunc("/post/{id}", GetPostEndpoint).Methods("GET")
 	router.HandleFunc("/post/user/{id}", GetUserPosts).Methods("GET")
 	http.ListenAndServe(":12345", router)
