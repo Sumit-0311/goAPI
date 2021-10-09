@@ -11,5 +11,5 @@ type Post struct {
 	UserID          string `json:"userid,omitempty" bson:"userid,omitempty"`
 	Caption         string `json:"caption,omitempty" bson:"caption,omitempty"`
 	ImageURL        string `json:"imageurl,omitempty" bson:"imageurl,omitempty"`
-	PostedTimestamp time.Duration `json:"name,omitempty" bson:"name,omitempty"`
+	PostedTimestamp time.Time `json:"postedtimestamp,omitempty" bson:"postedtimestamp,omitempty"`
 }
