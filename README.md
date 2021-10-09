@@ -33,7 +33,7 @@ Starting the application...
 Now the API is running on your machine on the local port 12345, next lets move onto testing out newly
 implemented API!
 
-#Test It Out!
+<h2>Test It Out!</h2>
 
 <li>To input data in user collection the link is: http://localhost/2001/user</li>
 <li>To input data in post collection the link is: http://localhost/2001/post</li>
