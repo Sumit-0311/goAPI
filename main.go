@@ -136,6 +136,37 @@ func GetPostEndpoint(response http.ResponseWriter, request *http.Request){
 	json.NewEncoder(response).Encode(post)
 }
 
+
+
+func GetUserPosts(response http.ResponseWriter, request *http.Request){
+	response.Header().Add("content-type", "application/json")
+	params := mux.Vars(request)
+	id, _ := params["id"]
+	var posts []Post
+	collection := client.Database("insta").Collection("posts")
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	cursor, err := collection.Find(ctx, Post{UserID: id})
+	if err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message": "` + err.Error() + `"}`))
+		return
+	}
+	defer cursor.Close(ctx)
+	for cursor.Next(ctx){
+		var post Post
+		cursor.Decode(&post)
+		posts = append(posts, post)
+	}
+	if err := cursor.Err(); err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message": "` + err.Error() + `"}`))
+		return
+	}
+	json.NewEncoder(response).Encode(posts)
+
+}
+
+
 func main() {
 	fmt.Println("Starting the application...")
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
@@ -147,5 +178,6 @@ func main() {
 	router.HandleFunc("/post", CreatePostEndpoint).Methods("POST")
 	router.HandleFunc("/posts", GetPostsEndpoint).Methods("GET")
 	router.HandleFunc("/post/{id}", GetPostEndpoint).Methods("GET")
+	router.HandleFunc("/post/user/{id}", GetUserPosts).Methods("GET")
 	http.ListenAndServe(":12345", router)
 }
