@@ -18,37 +18,6 @@ import (
 var client *mongo.Client
 var lock sync.Mutex
 
-// func Paginate(collection *mongo.Collection, startValue objectid.ObjectID, nPerPage int64) ([]bson.Document, *bson.Value, error) {
-
-//     // Query range filter using the default indexed _id field. 
-//     filter := bson.VC.DocumentFromElements(
-//         bson.EC.SubDocumentFromElements(
-//             "_id",
-//             bson.EC.ObjectID("$gt", startValue),
-//         ),
-//     )
-
-//     var opts []findopt.Find
-//     opts = append(opts, findopt.Sort(bson.NewDocument(bson.EC.Int32("_id", -1))))
-//     opts = append(opts, findopt.Limit(nPerPage))
-
-//     cursor, _ := collection.Find(context.Background(), filter, opts...)
-
-//     var lastValue *bson.Value
-//     var results []bson.Document
-//     for cursor.Next(context.Background()) {
-//         elem := bson.NewDocument()
-//         err := cursor.Decode(elem)
-//         if err != nil {
-//             return results, lastValue, err
-//         }
-//         results = append(results, *elem)
-//         lastValue = elem.Lookup("_id")
-//     }
-
-//     return results, lastValue, nil
-// }
-
 func CreateUserEndpoint(response http.ResponseWriter, request *http.Request){
 	lock.Lock()
     defer lock.Unlock()
